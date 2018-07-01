@@ -5,6 +5,8 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -14,6 +16,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
@@ -49,7 +55,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
             public void onLocationChanged(Location location) {
                 // Called when a new location is found by the network location provider.
                 //    Toast.makeText(getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
-                locationTextView.setText(location.toString());
+                locationTextView.setText(getPlace(location));////location.toString());
 
                 // Remove the listener you previously added
                 //  locationManager.removeUpdates(locationListener);
@@ -82,6 +88,32 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     }
 
+
+    public String getPlace(Location location) {
+
+
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        List<Address> addresses = null;
+        try {
+            addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+            if (addresses.size() > 0) {
+                String cityName = addresses.get(0).getAddressLine(0);
+                String stateName = addresses.get(0).getAddressLine(1);
+                String countryName = addresses.get(0).getAddressLine(2);
+                return stateName + "\n" + cityName + "\n" + countryName;
+            }
+
+            return "no place: \n ("+location.getLongitude()+" , "+location.getLatitude()+")";
+        }
+     catch(
+    IOException e)
+
+    {
+        e.printStackTrace();
+    }
+        return "IOException ...";
+}
     @SuppressLint("MissingPermission")
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
