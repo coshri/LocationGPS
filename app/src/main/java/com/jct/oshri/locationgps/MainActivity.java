@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
@@ -27,7 +28,7 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private TextView locationTextView;
     private Button getLocationButton;
     private Button stopUpdateButton;
-
+private  Button distanceButton;
 
     // Acquire a reference to the system Location Manager
     LocationManager locationManager;
@@ -45,6 +46,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
         stopUpdateButton = (Button) findViewById(R.id.stopUpdateButton);
         stopUpdateButton.setOnClickListener(this);
+
+        distanceButton = (Button) findViewById(R.id.distanceButton);
+        distanceButton.setOnClickListener(this);
+
 
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -89,8 +94,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
     }
 
 
-    public String getPlace(Location location) {
 
+
+
+    public String getPlace(Location location) {
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
         List<Address> addresses = null;
@@ -142,6 +149,10 @@ public class MainActivity extends Activity implements View.OnClickListener {
             locationManager.removeUpdates(locationListener);
             stopUpdateButton.setEnabled(false);
             getLocationButton.setEnabled(true);
+        }
+        if(v==distanceButton)
+        {
+            startActivity(new Intent(this,DistanceActivity.class));
         }
     }
 
