@@ -18,17 +18,27 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+
+import org.shredzone.commons.suncalc.SunTimes;
+
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends Activity implements View.OnClickListener {
 
+   final int PLACE_PICKER_REQUEST = 1;
 
     private TextView locationTextView;
     private Button getLocationButton;
     private Button stopUpdateButton;
 private  Button distanceButton;
+private  Button searchButton;
 
     // Acquire a reference to the system Location Manager
     LocationManager locationManager;
@@ -39,6 +49,9 @@ private  Button distanceButton;
 
 
     private void findViews() {
+
+
+
         locationTextView = (TextView) findViewById(R.id.locationTextView);
 
         getLocationButton = (Button) findViewById(R.id.getLocationButton);
@@ -50,6 +63,8 @@ private  Button distanceButton;
         distanceButton = (Button) findViewById(R.id.distanceButton);
         distanceButton.setOnClickListener(this);
 
+        searchButton = (Button) findViewById(R.id.searchButton);
+        searchButton.setOnClickListener(this);
 
 
         locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -58,6 +73,9 @@ private  Button distanceButton;
         // Define a listener that responds to location updates
         locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
+
+                showSunTimes(location.getLatitude(), location.getLongitude()); /// ...
+
                 // Called when a new location is found by the network location provider.
                 //    Toast.makeText(getBaseContext(), location.toString(), Toast.LENGTH_LONG).show();
                 locationTextView.setText(getPlace(location));////location.toString());
@@ -77,6 +95,18 @@ private  Button distanceButton;
         };
     }
 
+
+    void showSunTimes( double lat, double lng)
+    {
+        Date date = new Date();// date of calculation
+
+        SunTimes times = SunTimes.compute()
+                .on(date)       // set a date
+                .at(lat, lng)   // set a location
+                .execute();     // get the results
+        System.out.println("Sunrise: " + times.getRise());
+        System.out.println("Sunset: " + times.getSet());
+    }
 
     private void getLocation() {
 
@@ -103,6 +133,7 @@ private  Button distanceButton;
         List<Address> addresses = null;
         try {
             addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
 
             if (addresses.size() > 0) {
                 String cityName = addresses.get(0).getAddressLine(0);
@@ -154,9 +185,44 @@ private  Button distanceButton;
         {
             startActivity(new Intent(this,DistanceActivity.class));
         }
+
+        if(v==searchButton)
+        {
+
+            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+            try {
+                startActivityForResult(builder.build(this), PLACE_PICKER_REQUEST);
+            } catch (GooglePlayServicesRepairableException e) {
+                e.printStackTrace();
+            } catch (GooglePlayServicesNotAvailableException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PLACE_PICKER_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Place place = PlacePicker.getPlace(data, this);
+                String toastMsg = String.format("Place: %s", place.getName());
 
+                Date date = new Date();// date of calculation
+
+                SunTimes times = SunTimes.compute()
+                        .on(date)       // set a date
+                        .at(place.getLatLng().latitude,place.getLatLng().longitude)   // set a location
+                        .execute();     // get the results
+                toastMsg+= "\nSunrise: " + times.getRise();
+                toastMsg+= "\nSunset: " + times.getSet();
+
+
+                Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+
+
+            }
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

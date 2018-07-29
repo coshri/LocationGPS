@@ -1,5 +1,6 @@
 package com.jct.oshri.locationgps;
 
+import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
 import android.app.Activity;
@@ -41,6 +42,14 @@ public class DistanceActivity extends Activity implements View.OnClickListener {
         statusTextView = (TextView)findViewById( R.id.statusTextView );
 
         button.setOnClickListener( this );
+
+
+
+        placeAutocompleteFragment1.setHint("כתובת  מוצא");
+        placeAutocompleteFragment2.setHint("כתובת היעד");
+
+
+     //   placeAutocompleteFragment1.
 
 
         placeAutocompleteFragment1.setOnPlaceSelectedListener(new PlaceSelectionListener() {
@@ -85,28 +94,21 @@ public class DistanceActivity extends Activity implements View.OnClickListener {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void showDistance() {
 
-
-
-
-        float[] results = new float[5];
+        float[] results = new float[1];
         Location.distanceBetween(locationA.getLatitude(), locationA.getLongitude(),
                 locationB.getLatitude(),locationB.getLongitude(), results);
 
-
         float distance = locationA.distanceTo(locationB);
-      // locationA.bearingTo()
 
         if(distance>1000)
         statusTextView.setText(""+distance/1000+" km");
         else
         {
-            statusTextView.setText(""+distance
-
-                    +" meter");
+            statusTextView.setText(""+distance  +" meter");
         }
-
     }
 
 
